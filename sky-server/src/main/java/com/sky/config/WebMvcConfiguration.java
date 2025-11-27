@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.HttpMessageConverter;
-import org.springframework.http.converter.cbor.MappingJackson2CborHttpMessageConverter;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter; // 新增这行
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport;
@@ -35,6 +35,7 @@ public class WebMvcConfiguration extends WebMvcConfigurationSupport {
      *
      * @param registry
      */
+    @Override // 补充@Override注解（规范）
     protected void addInterceptors(InterceptorRegistry registry) {
         log.info("开始注册自定义拦截器...");
         registry.addInterceptor(jwtTokenAdminInterceptor)
@@ -66,22 +67,24 @@ public class WebMvcConfiguration extends WebMvcConfigurationSupport {
      * 设置静态资源映射
      * @param registry
      */
+    @Override // 补充@Override注解（规范）
     protected void addResourceHandlers(ResourceHandlerRegistry registry) {
         registry.addResourceHandler("/doc.html").addResourceLocations("classpath:/META-INF/resources/");
         registry.addResourceHandler("/webjars/**").addResourceLocations("classpath:/META-INF/resources/webjars/");
     }
 
     /**
-     * 扩展spring mvc消息转换器
+     * 扩展spring mvc消息转换器（修正为JSON转换器）
      * @param converters
      */
-    //统一对后端传给前端的数据进行格式转换
+    @Override // 补充@Override注解（规范）
     protected void extendMessageConverters(List<HttpMessageConverter<?>> converters) {
-        //消息转换器
-        MappingJackson2CborHttpMessageConverter converter = new MappingJackson2CborHttpMessageConverter();
-        //给消息转换器设置一个对象转换器，对象转换器可以将Java类转换成json数据
+        log.info("扩展Spring MVC消息转换器...");
+        // 1. 替换为JSON格式的消息转换器（核心修正点）
+        MappingJackson2HttpMessageConverter converter = new MappingJackson2HttpMessageConverter();
+        // 2. 设置自定义ObjectMapper（处理日期、空值等格式）
         converter.setObjectMapper(new JacksonObjectMapper());
-        //将上面的消息转换器对象追加到mvc框架的转换器集合中
+        // 3. 将自定义转换器添加到首位（优先使用）
         converters.add(0, converter);
     }
 }
