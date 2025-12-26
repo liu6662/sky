@@ -118,6 +118,8 @@ public class DishServiceImpl implements DishService {
             dishFlavorMapper.insertBatch(flavors);
         }
 
-
+    }
+    public List<Dish> list(Long categoryId){
+        return dishMapper.list(categoryId);
     }
 }
